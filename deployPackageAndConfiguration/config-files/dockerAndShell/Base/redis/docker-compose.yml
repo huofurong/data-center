@@ -16,5 +16,5 @@ services:
       - -c
       - |
         echo 1024 > /proc/sys/net/core/somaxconn
-        redis-server --requirepass "redis6379"
+        redis-server --requirepass "XXXXXXX"  # 自己设置密码
     privileged: true
