@@ -30,7 +30,7 @@ create table async_ddc_account_task
    req_tx_sn            varchar(255)  comment '请求流水号',
    chain_type           varchar(20)  comment '链类型',
    account_name         varchar(255)  comment '链账户名称',
-   account_task_type    int  comment '交易类型： 1=链账户创建   2=链账户冻结/解冻',
+   account_task_type    int  comment '交易类型： 1=链账户创建   2=链账户冻结/解冻 ',
    account_task_hash    varchar(100)  comment '交易hash',
    ddc_account_type     int default 0  comment '用户类型 1=平台方 2=平台方的用户  默认0',
    account_address      varchar(200)  comment '链账户地址',
