@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 8061:8061
     volumes:
-      - $PWD/pkg/ddc-opsjob.jar:/bsn/ddc-opsjob/ROOT.jar
-      - /bsn/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-opsjob/pkg/ddc-opsjob.jar:/bsn/ddc-opsjob/ROOT.jar
+      - /bsn/ddc-opsjob/logs/:/bsn/ddclogs/
+      - /bsn/ddc-opsjob/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

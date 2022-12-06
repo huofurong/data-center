@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 8091:8091
     volumes:
-      - $PWD/pkg/ddc-auth.jar:/bsn/ddc-auth/ROOT.jar
-      - /bsn/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-auth/pkg/ddc-auth.jar:/bsn/ddc-auth/ROOT.jar
+      - /bsn/ddc-auth/logs/:/bsn/ddclogs/
+      - /bsn/ddc-auth/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

@@ -10,9 +10,9 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - $PWD/data:/var/lib/mysql
-      - $PWD/conf/my.cnf:/etc/mysql/my.cnf
-      - $PWD/script:/mysql-script
+      - /bsn/mysql/data:/var/lib/mysql
+      - /bsn/mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - /bsn/mysql/script:/mysql-script
     command:
       --max_connections=100000
       --character-set-server=utf8mb4

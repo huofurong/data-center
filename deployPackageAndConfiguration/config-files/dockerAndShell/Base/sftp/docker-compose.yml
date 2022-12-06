@@ -5,7 +5,7 @@ services:
     container_name: sftp
     restart: always
     volumes:
-        - ./data:/home/
-        - ./user/users.conf:/etc/sftp/users.conf
+        - /bsn/sftp/data:/home/
+        - /bsn/sftp/user/users.conf:/etc/sftp/users.conf
     ports:
         - "8012:22"

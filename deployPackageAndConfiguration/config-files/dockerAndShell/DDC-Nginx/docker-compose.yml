@@ -5,14 +5,14 @@ services:
     image: openresty/openresty:latest
     restart: always
     volumes:
-      - $PWD/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
-      - $PWD/conf/ip_white.conf:/usr/local/openresty/nginx/conf/ip_white.conf
-      - $PWD/stream:/etc/nginx/conf.d
-      - $PWD/logs:/var/log/
-      - $PWD/ssl:/etc/nginx/ssl
+      - /bsn/ddc-nginx/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - /bsn/ddc-nginx/conf/ip_white.conf:/usr/local/openresty/nginx/conf/ip_white.conf
+      - /bsn/ddc-nginx/stream:/etc/nginx/conf.d
+      - /bsn/ddc-nginx/logs:/var/log/
+      - /bsn/ddc-nginx/ssl:/etc/nginx/ssl
       - /etc/hosts:/etc/hosts
-      - $PWD/html/operation/dist:/usr/local/openresty/nginx/html/operation
-      - $PWD/html/portal/dist:/usr/local/openresty/nginx/html/portal
+      - /bsn/ddc-nginx/html/operation/dist:/usr/local/openresty/nginx/html/operation
+      - /bsn/ddc-nginx/html/portal/dist:/usr/local/openresty/nginx/html/portal
     ports:
       - "80:80"
       - "443:443"

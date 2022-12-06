@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 8071:8071
     volumes:
-      - $PWD/pkg/ddc-base.jar:/bsn/ddc-base/ROOT.jar
-      - /bsn/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-base/pkg/ddc-base.jar:/bsn/ddc-base/ROOT.jar
+      - /bsn//ddc-base/logs/:/bsn/ddclogs/
+      - /bsn/ddc-base/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
