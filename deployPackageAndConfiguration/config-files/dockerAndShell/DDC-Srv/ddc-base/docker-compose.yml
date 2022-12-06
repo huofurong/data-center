@@ -10,7 +10,7 @@ services:
     #   - 8071:8071
     volumes:
       - /bsn/ddc-base/pkg/ddc-base.jar:/bsn/ddc-base/ROOT.jar
-      - /bsn//ddc-base/logs/:/bsn/ddclogs/
+      - /bsn/ddc-base/logs/:/bsn/ddclogs/
       - /bsn/ddc-base/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
