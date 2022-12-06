@@ -15,9 +15,9 @@ services:
     # ports:
     #   - 9070:9070
     volumes:
-      - $PWD/swap-api/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
+      - $PWD/ddc-swap-api/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
       - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/swap-api/script/:/bsn/script
+      - $PWD/ddc-swap-api/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -34,9 +34,9 @@ services:
     # ports:
     #   - 38021:38021
     volumes:
-      - $PWD/swap-api/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
+      - $PWD/ddc-swap-job/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
       - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/swap-api/script/:/bsn/script
+      - $PWD/ddc-swap-job/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -67,7 +67,7 @@ services:
     container_name: ddc-account
     working_dir: /bsn/ddc-account
     restart: always
-    network_mode: hosts
+    network_mode: host
     # ports:
     #   - 8072:8072
     volumes:

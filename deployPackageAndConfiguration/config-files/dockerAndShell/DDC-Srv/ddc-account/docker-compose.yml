@@ -5,7 +5,7 @@ services:
     container_name: ddc-account
     working_dir: /bsn/ddc-account
     restart: always
-    network_mode: hosts
+    network_mode: host
     # ports:
     #   - 8072:8072
     volumes:
