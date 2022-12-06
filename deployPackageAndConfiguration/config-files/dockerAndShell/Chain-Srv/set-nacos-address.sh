@@ -1,5 +1,5 @@
 #!/bin/bash
-read -p "Please enter the nacos server address: " NACOSADDRESS
+read -p "Please enter the nacos server ip: " NACOSADDRESS
 read -p "Please enter the nacos server port: " NACOSPORTS
 START_SCRIPT=$(find /bsn -name start.sh)
 for i in ${START_SCRIPT}; do
