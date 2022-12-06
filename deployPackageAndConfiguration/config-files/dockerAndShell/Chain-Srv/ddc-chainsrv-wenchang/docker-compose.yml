@@ -1,13 +1,13 @@
 version: "3"
 services:
-  ddc-chainsrv-wenchang	:
+  ddc-chainsrv-wenchang:
     image: java8:1.8.0_351
-    container_name: ddc-chainsrv-wenchang	
+    container_name: ddc-chainsrv-wenchang
     working_dir: /bsn/chainService
     restart: always
     network_mode: host
     # ports:
-    #   - 32010:32010
+    #   - 32020:32020
     volumes:
       - $PWD/pkg/ddc-chainsrv-wenchang.jar:/bsn/chainService/ROOT.jar
       - /bsn/ddclogs/:/bsn/ddclogs
