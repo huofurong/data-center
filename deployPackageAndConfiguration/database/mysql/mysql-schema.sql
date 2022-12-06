@@ -43,8 +43,8 @@ create table async_ddc_account_task
    open_ddc_yn          int default 1  comment '是否开通过DDC  1=未开通（只开通OPB没有上DDC合约）  5=已开通 默认1',
    error_msg            varchar(2000)  comment '错误信息',
    create_query_status  int default 0  comment '创建查询状态 0：未查询，1：已查询',
-   ddc_open_query_status int  comment '链账户ddc开通查询状态 0： 未查询，1：已查询',
-   ddc_opening_num      int  comment '链账户长时间处于开通中重试次数',
+   ddc_open_query_status int default 0 comment '链账户ddc开通查询状态 0： 未查询，1：已查询',
+   ddc_opening_num      int default 0 comment '链账户长时间处于开通中重试次数',
    create_date          datetime  comment '创建时间',
    update_date          datetime  comment '更新时间',
    primary key (async_ddc_account_task_id)
@@ -82,7 +82,7 @@ create table async_ddc_tx_task
    ddc_uri              varchar(2000)  comment 'DDC URI',
    ddc_data             varchar(1000)  comment 'DDC附加数据',
    meta_account_encrypt_private varchar(500)  comment '元交易链账号加密私钥',
-   chain_service_status int  comment '链服务处理状态：
+   chain_service_status int default 0 comment '链服务处理状态：
              0=待处理
              1=处理成功（根据交易hash查询交易回执成功）
              2=处理失败（在处理中拿着交易hash多次失败后的状态，依赖失败次数字段）
@@ -90,14 +90,14 @@ create table async_ddc_tx_task
              4=需要重试（如 nonce 错误）
               5=待查询交易（请求链上查询交易结果异常）
               6=待人工处理（等待人工处理）',
-   chain_service_fail_num int  comment '链服务交易回执查询失败次数',
-   chain_service_have_err varchar(5)  comment '链服务处理是否有异常\r\n             yes=有\r\n             no=没有',
+   chain_service_fail_num int default 0 comment '链服务交易回执查询失败次数',
+   chain_service_have_err varchar(5) default 'no' comment '链服务处理是否有异常\r\n             yes=有\r\n             no=没有',
    chain_service_err_reason varchar(2000)  comment '链服务定时处理原失败原因',
    tx_err_msg_zh_cn     varchar(2000)  comment '链服务定时处理失败原因说明',
    tx_err_msg_en        varchar(2000)  comment '链服务定时处理失败原因说明英文',
    tx_date              datetime  comment '链上交易时间',
    chain_service_update_date datetime  comment '链服务最后更新时间',
-   operation_status     int  comment '业务处理状态
+   operation_status     int default 0 comment '业务处理状态
              0=待处理
              1=已处理',
    operation_update_date datetime  comment '业务最后更新时间',
@@ -925,7 +925,7 @@ create table proxy_account_status_log
    chain_account_type   int  comment '平台方管理状态：1=解冻 2=冻结',
    operate_type         int  comment '运营方管理状态：1=解冻 2=冻结',
    opc_chain_type       varchar(100)  comment '链标识',
-   query_type           int  comment '查询状态查询状态 0=需要查询 1=已经查询出结果无需再次查询到期后删除',
+   query_type           int default 0 comment '查询状态查询状态 0=需要查询 1=已经查询出结果无需再次查询到期后删除',
    create_date          datetime  comment '创建时间',
    uu_hash              varchar(50)  comment '在推送数据时用于判断数据唯一性',
    primary key (account_status_log_id)
@@ -943,7 +943,7 @@ create table proxy_chain_account_log
    user_did             varchar(200)  comment '终端用户did',
    platform_did         varchar(200)  comment '平台方did',
    opc_chain_type       varchar(100)  comment '链标识',
-   query_type           int  comment '查询状态 0=需要查询 1=已经查询出结果无需再次查询到期后删除',
+   query_type           int default 0 comment '查询状态 0=需要查询 1=已经查询出结果无需再次查询到期后删除',
    user_role            int  comment '用户角色 0=运营方 1=平台方 2=终端用户',
    create_date          datetime  comment '创建时间',
    uu_hash              varchar(50)  comment '在推送数据时用于判断数据唯一性',
@@ -975,7 +975,7 @@ create table proxy_ddc_operation_log
              22=元交易流转
              23=元交易销毁',
    opc_chain_type       varchar(100)  comment '链标识',
-   query_type           int  comment '查询状态
+   query_type           int default 0 comment '查询状态
              0=需要查询
              1=已经查询',
    ddc_symbol           varchar(50)  comment 'DDC 符号',
@@ -1274,298 +1274,303 @@ ALTER TABLE opb_chain_client_info ADD INDEX idx_opb_chain_client_address (opb_ch
 
 #----下拉框状态----
 
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_USER_STATUS_1', 'OPS_USER_STATUS', '禁用', 'User Disabled', '1', '运营用户管理-用户状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_USER_STATUS_2', 'OPS_USER_STATUS', '启用', 'User Eeable', '2', '运营用户管理-用户状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_ROLE_STATUS_0', 'OPS_ROLE_STATUS', '禁用', 'Role Disabled', '0', '运营角色管理-角色状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_ROLE_STATUS_1', 'OPS_ROLE_STATUS', '启用', 'Role Enabled', '1', '运营角色管理-角色状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_1', 'OPS_DDC_MANAGE_SYS_STATUS', '冻结', 'Frozen', '1', 'DDC管理-管理状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_5', 'OPS_DDC_MANAGE_SYS_STATUS', '解冻', 'Unfrozen', '5', 'DDC管理-管理状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_10', 'OPS_DDC_MANAGE_SYS_STATUS', '冻结中', 'Freezing', '10', 'DDC管理-管理状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_15', 'OPS_DDC_MANAGE_SYS_STATUS', '解冻中', 'Unfreezing', '15', 'DDC管理-管理状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PACKAGE_MANAGEMENT_STATUS_1', 'PACKAGE_MANAGEMENT_STATUS', '启用', 'Package Eeable', '1', '运营套餐管理-套餐状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PACKAGE_MANAGEMENT_STATUS_0', 'PACKAGE_MANAGEMENT_STATUS', '禁用', 'Package Disabled', '0', '运营套餐管理-套餐状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1', 'PORTAL_ACCOUNT_TRADE_TYPE', '资金账户充值', 'Billing Account Deposit', '1', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_5', 'PORTAL_ACCOUNT_TRADE_TYPE', '资金账户提现', 'Billing Account Withdrawal', '5', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_100', 'PORTAL_ACCOUNT_TRADE_TYPE', '能量值充值', 'Gas Fee Recharge', '100', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1100', 'PORTAL_ACCOUNT_TRADE_TYPE', '能量值充值退款', 'Refund of recharged gas fee', '1100', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_20', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC生成', 'DDC Minit', '20', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_22', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC发送', 'DDC Transfer', '22', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_23', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC销毁', 'DDC Destroyed', '23', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_110', 'PORTAL_ACCOUNT_TRADE_TYPE', '资源充值', 'Resource Fee Recharge', '110', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1110', 'PORTAL_ACCOUNT_TRADE_TYPE', '资源充值退款', 'Refund of recharged resource fee', '1110', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_120', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC生成退款', 'Refund DDC Minit', '120', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_122', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC发送退款', 'Refund DDC Transfer', '122', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_123', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC销毁退款', 'Refund DDC Destroyed', '123', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_TYPE_721', 'PORTAL_DDC_TYPE', 'ERC-721', 'ERC-721', '721', '门户-官方DDC-DDC类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_TYPE_1155', 'PORTAL_DDC_TYPE', 'ERC-1155', 'ERC-1155', '1155', '门户-官方DDC-DDC类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CERTIFICATE_DOWNLOAD_STATUS_0', 'OPS_CERTIFICATE_DOWNLOAD_STATUS', '未下载', 'Not downloaded', '0', '运营-证书是否已下载状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CERTIFICATE_DOWNLOAD_STATUS_1', 'OPS_CERTIFICATE_DOWNLOAD_STATUS', '已下载', 'Downloaded', '1', '运营-证书是否已下载状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_COST_SETUP_1', 'OPS_DDC_COST_SETUP', 'DDC生成', 'Ddc Mint', '1', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_COST_SETUP_2', 'OPS_DDC_COST_SETUP', 'DDC转移', 'Ddc Transfer', '2', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_COST_SETUP_3', 'OPS_DDC_COST_SETUP', 'DDC销毁', 'Ddc Destroyed', '3', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_0', 'OPS_NODE_ADMINISTRATION_STATUS', '待审核', 'Pending Review', '0', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_1', 'OPS_NODE_ADMINISTRATION_STATUS', '入网中', 'Approved', '1', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_2', 'OPS_NODE_ADMINISTRATION_STATUS', '审核拒绝', 'Not Approved', '2', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_5', 'OPS_NODE_ADMINISTRATION_STATUS', '入网失败', 'Failed Access', '5', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_10', 'OPS_NODE_ADMINISTRATION_STATUS', '待确认入网', 'To Be Confirmed Access', '10', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_15', 'OPS_NODE_ADMINISTRATION_STATUS', '已确认入网', 'Confirmed Access', '15', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_20', 'OPS_NODE_ADMINISTRATION_STATUS', '入网完成', 'Successful Access', '20', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_30', 'OPS_NODE_ADMINISTRATION_STATUS', '退网完成', 'Back Out', '30', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_10', 'PORTAL_DDC_GENERATE_STATUS', '生成处理中', 'Generation Processing', '10', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_1', 'PORTAL_DDC_GENERATE_STATUS', '正常', 'Valid', '1', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_15', 'PORTAL_DDC_GENERATE_STATUS', '生成失败', 'Generation Failed', '15', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_20', 'PORTAL_DDC_GENERATE_STATUS', '发送处理中', 'Sending', '20', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_25', 'PORTAL_DDC_GENERATE_STATUS', '发送失败', 'Send Failed', '25', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_100', 'PORTAL_DDC_GENERATE_STATUS', '已冻结', 'Frozen', '100', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CHARGE_TYPE_1', 'OPS_CHARGE_TYPE', '微信', 'Wechat', '1', '运营-用户资金管理-充值查询-充值方式', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CHARGE_TYPE_2', 'OPS_CHARGE_TYPE', '支付宝', 'Alipay', '2', '运营-用户资金管理-充值查询-充值方式', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CHARGE_TYPE_3', 'OPS_CHARGE_TYPE', '企业银联', 'Enterprise UnionPay', '3', '运营-用户资金管理-充值查询-充值方式', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CHARGE_TYPE_4', 'OPS_CHARGE_TYPE', '线下汇款', 'Offline Remittance', '4', '运营-用户资金管理-充值查询-充值方式', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_CHARGE_TYPE_10', 'OPS_CHARGE_TYPE', 'VISA', 'VISA', '10', '运营-用户资金管理-充值查询-充值方式', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_1', 'OPS_WITHDRAW_PROCESS_TYPE', '待审核', 'Pending Review', '1', '运营-用户资金管理-提现管理-提现状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_5', 'OPS_WITHDRAW_PROCESS_TYPE', '审核失败', 'Not Approved', '5', '运营-用户资金管理-提现管理-提现状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_10', 'OPS_WITHDRAW_PROCESS_TYPE', '审核成功', 'Approved', '10', '运营-用户资金管理-提现管理-提现状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_15', 'OPS_WITHDRAW_PROCESS_TYPE', '已确认', 'Confirmed', '15', '运营-用户资金管理-提现管理-提现状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_1', 'OPS_REMITTANCE_APPROVED_TYPE', '待审核', 'Pending Review', '1', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_5', 'OPS_REMITTANCE_APPROVED_TYPE', '审核失败', 'Not Approved', '5', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_10', 'OPS_REMITTANCE_APPROVED_TYPE', '审核成功', 'Approved', '10', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_55', 'PORTAL_ACCOUNT_TRADE_TYPE', '账户提现退款', 'Account Withdrawal Refund', '55', '首页-交易类型', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_4', 'PORTAL_DDC_GENERATE_STATUS', '销毁处理中', 'Burning', '4', '门户-官方DDC管理-DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_CHAIN_ACCOUNT_STATUS_1', 'PORTAL_CHAIN_ACCOUNT_STATUS', '已冻结', 'Frozen', '1', '门户-链账户管理-链账户状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_CHAIN_ACCOUNT_STATUS_2', 'PORTAL_CHAIN_ACCOUNT_STATUS', '已启用', 'Enabled', '2', '门户-链账户管理-链账户状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_3', 'OPS_NODE_ADMINISTRATION_STATUS', '已保存', 'Save', '3', '运营-链节点管理-节点状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_1', 'OPS_DDC_721_MANAGE_STATUS', '生成处理中', 'Generation Processing', '1', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_5', 'OPS_DDC_721_MANAGE_STATUS', '正常', 'Valid', '5', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_10', 'OPS_DDC_721_MANAGE_STATUS', '生成失败', 'Generation Failed', '10', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_15', 'OPS_DDC_721_MANAGE_STATUS', '发送处理中', 'Sending', '15', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_20', 'OPS_DDC_721_MANAGE_STATUS', '发送失败', 'Send Failed', '20', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_25', 'OPS_DDC_721_MANAGE_STATUS', '销毁处理中', 'Burning', '25', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_35', 'OPS_DDC_721_MANAGE_STATUS', '销毁', 'Burn', '35', 'DDC管理-721DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_1', 'OPS_DDC_MANAGE_STATUS', '生成处理中', 'Generation Processing', '1', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_5', 'OPS_DDC_MANAGE_STATUS', '正常', 'Valid', '5', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_10', 'OPS_DDC_MANAGE_STATUS', '生成失败', 'Generation Failed', '10', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_15', 'OPS_DDC_MANAGE_STATUS', '发送处理中', 'Sending', '15', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_20', 'OPS_DDC_MANAGE_STATUS', '发送失败', 'Send Failed', '20', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_30', 'OPS_DDC_MANAGE_STATUS', '部分销毁', 'Part burn', '30', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_DDC_MANAGE_STATUS_35', 'OPS_DDC_MANAGE_STATUS', '销毁', 'Burn', '35', 'DDC管理-1155DDC状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_MGR_STATE_STATUS_1', 'OPS_MGR_STATE_STATUS', '冻结', 'Frozen', '1', '门户-官方DDC管理-DDC运营冻结状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'OPS_MGR_STATE_STATUS_5', 'OPS_MGR_STATE_STATUS', '正常', 'Valid', '5', '门户-官方DDC管理-DDC运营冻结状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'DDC_GENERATE_STATE_STATUS_1', 'DDC_GENERATE_STATE_STATUS', '生成处理中', 'Generation Processing', '1', '门户-官方DDC管理-DDC生成状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'DDC_GENERATE_STATE_STATUS_5', 'DDC_GENERATE_STATE_STATUS', '正常', 'Valid', '5', '门户-官方DDC管理-DDC生成状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'DDC_GENERATE_STATE_STATUS_10', 'DDC_GENERATE_STATE_STATUS', '生成失败', 'Generation Failed', '10', '门户-官方DDC管理-DDC生成状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_STATE_STATUS_1', 'PORTAL_DDC_STATE_STATUS', '正常', 'Valid', '1', '门户-官方DDC管理-DDC发送状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_STATE_STATUS_4', 'PORTAL_DDC_STATE_STATUS', '销毁处理中', 'Burning', '4', '门户-官方DDC管理-DDC发送状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_STATE_STATUS_5', 'PORTAL_DDC_STATE_STATUS', '销毁', 'Burn', '5', '门户-官方DDC管理-DDC发送状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_STATE_STATUS_20', 'PORTAL_DDC_STATE_STATUS', '发送处理中', 'Sending', '20', '门户-官方DDC管理-DDC发送状态', '2', '1');
-INSERT INTO `chain_status_enums` ( `cse_code`, `cse_p_code`, `cse_cn_desc`, `cse_en_desc`, `cse_value`, `cse_remark`, `lockable`, `cse_sort`) VALUES ( 'PORTAL_DDC_STATE_STATUS_25', 'PORTAL_DDC_STATE_STATUS', '发送失败', 'Send Failed', '25', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_USER_STATUS_1', 'OPS_USER_STATUS', '禁用', 'User Disabled', '1', '运营用户管理-用户状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_USER_STATUS_2', 'OPS_USER_STATUS', '启用', 'User Eeable', '2', '运营用户管理-用户状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_ROLE_STATUS_0', 'OPS_ROLE_STATUS', '禁用', 'Role Disabled', '0', '运营角色管理-角色状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_ROLE_STATUS_1', 'OPS_ROLE_STATUS', '启用', 'Role Enabled', '1', '运营角色管理-角色状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_1', 'OPS_DDC_MANAGE_SYS_STATUS', '冻结', 'Frozen', '1', 'DDC管理-管理状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_5', 'OPS_DDC_MANAGE_SYS_STATUS', '解冻', 'Unfrozen', '5', 'DDC管理-管理状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_10', 'OPS_DDC_MANAGE_SYS_STATUS', '冻结中', 'Freezing', '10', 'DDC管理-管理状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_SYS_STATUS_15', 'OPS_DDC_MANAGE_SYS_STATUS', '解冻中', 'Unfreezing', '15', 'DDC管理-管理状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PACKAGE_MANAGEMENT_STATUS_1', 'PACKAGE_MANAGEMENT_STATUS', '启用', 'Package Eeable', '1', '运营套餐管理-套餐状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PACKAGE_MANAGEMENT_STATUS_0', 'PACKAGE_MANAGEMENT_STATUS', '禁用', 'Package Disabled', '0', '运营套餐管理-套餐状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1', 'PORTAL_ACCOUNT_TRADE_TYPE', '资金账户充值', 'Billing Account Deposit', '1', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_5', 'PORTAL_ACCOUNT_TRADE_TYPE', '资金账户提现', 'Billing Account Withdrawal', '5', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_100', 'PORTAL_ACCOUNT_TRADE_TYPE', '能量值充值', 'Gas Fee Recharge', '100', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1100', 'PORTAL_ACCOUNT_TRADE_TYPE', '能量值充值退款', 'Refund of recharged gas fee', '1100', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_20', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC生成', 'DDC Minit', '20', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_22', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC发送', 'DDC Transfer', '22', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_23', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC销毁', 'DDC Destroyed', '23', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_110', 'PORTAL_ACCOUNT_TRADE_TYPE', '资源充值', 'Resource Fee Recharge', '110', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_1110', 'PORTAL_ACCOUNT_TRADE_TYPE', '资源充值退款', 'Refund of recharged resource fee', '1110', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_120', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC生成退款', 'Refund DDC Minit', '120', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_122', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC发送退款', 'Refund DDC Transfer', '122', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_123', 'PORTAL_ACCOUNT_TRADE_TYPE', 'DDC销毁退款', 'Refund DDC Destroyed', '123', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_TYPE_721', 'PORTAL_DDC_TYPE', 'ERC-721', 'ERC-721', '721', '门户-官方DDC-DDC类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_TYPE_1155', 'PORTAL_DDC_TYPE', 'ERC-1155', 'ERC-1155', '1155', '门户-官方DDC-DDC类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CERTIFICATE_DOWNLOAD_STATUS_0', 'OPS_CERTIFICATE_DOWNLOAD_STATUS', '未下载', 'Not downloaded', '0', '运营-证书是否已下载状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CERTIFICATE_DOWNLOAD_STATUS_1', 'OPS_CERTIFICATE_DOWNLOAD_STATUS', '已下载', 'Downloaded', '1', '运营-证书是否已下载状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_COST_SETUP_1', 'OPS_DDC_COST_SETUP', 'DDC生成', 'Ddc Mint', '1', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_COST_SETUP_2', 'OPS_DDC_COST_SETUP', 'DDC转移', 'Ddc Transfer', '2', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_COST_SETUP_3', 'OPS_DDC_COST_SETUP', 'DDC销毁', 'Ddc Destroyed', '3', '官方DDC管理-DDC费用设置-费用类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_0', 'OPS_NODE_ADMINISTRATION_STATUS', '待审核', 'Pending Review', '0', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_1', 'OPS_NODE_ADMINISTRATION_STATUS', '入网中', 'Approved', '1', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_2', 'OPS_NODE_ADMINISTRATION_STATUS', '审核拒绝', 'Not Approved', '2', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_5', 'OPS_NODE_ADMINISTRATION_STATUS', '入网失败', 'Failed Access', '5', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_10', 'OPS_NODE_ADMINISTRATION_STATUS', '待确认入网', 'To Be Confirmed Access', '10', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_15', 'OPS_NODE_ADMINISTRATION_STATUS', '已确认入网', 'Confirmed Access', '15', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_20', 'OPS_NODE_ADMINISTRATION_STATUS', '入网完成', 'Successful Access', '20', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_30', 'OPS_NODE_ADMINISTRATION_STATUS', '退网完成', 'Back Out', '30', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_10', 'PORTAL_DDC_GENERATE_STATUS', '生成处理中', 'Generation Processing', '10', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_1', 'PORTAL_DDC_GENERATE_STATUS', '正常', 'Valid', '1', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_15', 'PORTAL_DDC_GENERATE_STATUS', '生成失败', 'Generation Failed', '15', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_20', 'PORTAL_DDC_GENERATE_STATUS', '发送处理中', 'Sending', '20', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_25', 'PORTAL_DDC_GENERATE_STATUS', '发送失败', 'Send Failed', '25', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_100', 'PORTAL_DDC_GENERATE_STATUS', '已冻结', 'Frozen', '100', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CHARGE_TYPE_1', 'OPS_CHARGE_TYPE', '微信', 'Wechat', '1', '运营-用户资金管理-充值查询-充值方式', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CHARGE_TYPE_2', 'OPS_CHARGE_TYPE', '支付宝', 'Alipay', '2', '运营-用户资金管理-充值查询-充值方式', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CHARGE_TYPE_3', 'OPS_CHARGE_TYPE', '企业银联', 'Enterprise UnionPay', '3', '运营-用户资金管理-充值查询-充值方式', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CHARGE_TYPE_4', 'OPS_CHARGE_TYPE', '线下汇款', 'Offline Remittance', '4', '运营-用户资金管理-充值查询-充值方式', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_CHARGE_TYPE_10', 'OPS_CHARGE_TYPE', 'VISA', 'VISA', '10', '运营-用户资金管理-充值查询-充值方式', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_1', 'OPS_WITHDRAW_PROCESS_TYPE', '待审核', 'Pending Review', '1', '运营-用户资金管理-提现管理-提现状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_5', 'OPS_WITHDRAW_PROCESS_TYPE', '审核失败', 'Not Approved', '5', '运营-用户资金管理-提现管理-提现状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_10', 'OPS_WITHDRAW_PROCESS_TYPE', '审核成功', 'Approved', '10', '运营-用户资金管理-提现管理-提现状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_WITHDRAW_PROCESS_TYPE_15', 'OPS_WITHDRAW_PROCESS_TYPE', '已确认', 'Confirmed', '15', '运营-用户资金管理-提现管理-提现状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_1', 'OPS_REMITTANCE_APPROVED_TYPE', '待审核', 'Pending Review', '1', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_5', 'OPS_REMITTANCE_APPROVED_TYPE', '审核失败', 'Not Approved', '5', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_REMITTANCE_APPROVED_TYPE_10', 'OPS_REMITTANCE_APPROVED_TYPE', '审核成功', 'Approved', '10', '运营-用户资金管理-汇款登记-审核状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_ACCOUNT_TRADE_TYPE_55', 'PORTAL_ACCOUNT_TRADE_TYPE', '账户提现退款', 'Account Withdrawal Refund', '55', '首页-交易类型', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_GENERATE_STATUS_4', 'PORTAL_DDC_GENERATE_STATUS', '销毁处理中', 'Burning', '4', '门户-官方DDC管理-DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_CHAIN_ACCOUNT_STATUS_1', 'PORTAL_CHAIN_ACCOUNT_STATUS', '已冻结', 'Frozen', '1', '门户-链账户管理-链账户状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_CHAIN_ACCOUNT_STATUS_2', 'PORTAL_CHAIN_ACCOUNT_STATUS', '已启用', 'Enabled', '2', '门户-链账户管理-链账户状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_NODE_ADMINISTRATION_STATUS_3', 'OPS_NODE_ADMINISTRATION_STATUS', '已保存', 'Save', '3', '运营-链节点管理-节点状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_1', 'OPS_DDC_721_MANAGE_STATUS', '生成处理中', 'Generation Processing', '1', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_5', 'OPS_DDC_721_MANAGE_STATUS', '正常', 'Valid', '5', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_10', 'OPS_DDC_721_MANAGE_STATUS', '生成失败', 'Generation Failed', '10', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_15', 'OPS_DDC_721_MANAGE_STATUS', '发送处理中', 'Sending', '15', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_20', 'OPS_DDC_721_MANAGE_STATUS', '发送失败', 'Send Failed', '20', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_25', 'OPS_DDC_721_MANAGE_STATUS', '销毁处理中', 'Burning', '25', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_721_MANAGE_STATUS_35', 'OPS_DDC_721_MANAGE_STATUS', '销毁', 'Burn', '35', 'DDC管理-721DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_STATUS_1', 'OPS_DDC_MANAGE_STATUS', '生成处理中', 'Generation Processing', '1', 'DDC管理-1155DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_STATUS_5', 'OPS_DDC_MANAGE_STATUS', '正常', 'Valid', '5', 'DDC管理-1155DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_STATUS_10', 'OPS_DDC_MANAGE_STATUS', '生成失败', 'Generation Failed', '10', 'DDC管理-1155DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_STATUS_25', 'OPS_DDC_MANAGE_STATUS', '销毁处理中', 'Burning', '25', 'DDC管理-1155DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_MANAGE_STATUS_35', 'OPS_DDC_MANAGE_STATUS', '销毁', 'Burn', '35', 'DDC管理-1155DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_MGR_STATE_STATUS_1', 'OPS_MGR_STATE_STATUS', '冻结', 'Frozen', '1', '门户-官方DDC管理-DDC运营冻结状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_MGR_STATE_STATUS_5', 'OPS_MGR_STATE_STATUS', '正常', 'Valid', '5', '门户-官方DDC管理-DDC运营冻结状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'DDC_GENERATE_STATE_STATUS_1', 'DDC_GENERATE_STATE_STATUS', '生成处理中', 'Generation Processing', '1', '门户-官方DDC管理-DDC生成状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'DDC_GENERATE_STATE_STATUS_5', 'DDC_GENERATE_STATE_STATUS', '正常', 'Valid', '5', '门户-官方DDC管理-DDC生成状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'DDC_GENERATE_STATE_STATUS_10', 'DDC_GENERATE_STATE_STATUS', '生成失败', 'Generation Failed', '10', '门户-官方DDC管理-DDC生成状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_STATE_STATUS_1', 'PORTAL_DDC_STATE_STATUS', '正常', 'Valid', '1', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_STATE_STATUS_4', 'PORTAL_DDC_STATE_STATUS', '销毁处理中', 'Burning', '4', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_STATE_STATUS_5', 'PORTAL_DDC_STATE_STATUS', '销毁', 'Burn', '5', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_STATE_STATUS_20', 'PORTAL_DDC_STATE_STATUS', '发送处理中', 'Sending', '20', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'PORTAL_DDC_STATE_STATUS_25', 'PORTAL_DDC_STATE_STATUS', '发送失败', 'Send Failed', '25', '门户-官方DDC管理-DDC发送状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_1', 'OPS_DDC_OWNER_MANAGE_STATUS', '生成处理中', 'Generation Processing', '1', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_5', 'OPS_DDC_OWNER_MANAGE_STATUS', '正常', 'Valid', '5', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_10', 'OPS_DDC_OWNER_MANAGE_STATUS', '生成失败', 'Generation Failed', '10', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_15', 'OPS_DDC_OWNER_MANAGE_STATUS', '发送处理中', 'Sending', '15', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_20', 'OPS_DDC_OWNER_MANAGE_STATUS', '发送失败', 'Send Failed', '20', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_25', 'OPS_DDC_OWNER_MANAGE_STATUS', '销毁处理中', 'Burning', '25', 'DDC管理-持有者DDC状态', '2', '1');
+INSERT INTO chain_status_enums ( cse_code, cse_p_code, cse_cn_desc, cse_en_desc, cse_value, cse_remark, lockable, cse_sort) VALUES ( 'OPS_DDC_OWNER_MANAGE_STATUS_35', 'OPS_DDC_OWNER_MANAGE_STATUS', '销毁', 'Burn', '35', 'DDC管理-持有者DDC状态', '2', '1');
 
 
 
 #---权限 resource------
 
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('1', '0', 'P0', 'BSN城市算力中心管理系统', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('2', '1', 'P1', '首页', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('3', '1', 'P2', '门户配置管理', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('4', '1', 'P3', '注册用户管理', '3', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('5', '73', 'P4', '节点管理', '4', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('6', '1', 'P5', '链账户管理', '5', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('7', '1', 'P6', '网络接入', '6', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('8', '1', 'P7', '应用接入', '7', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('9', '1', 'P8', '用户资金管理', '8', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('10', '1', 'P9', '系统用户管理', '9', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('11', '3', 'P10', '保存', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('12', '4', 'P11', '删除', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('13', '5', 'P12', '节点入网', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('14', '5', 'P13', '查看', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('15', '5', 'P14', '确认入网', '3', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('16', '5', 'P15', '退网', '4', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('17', '73', 'P16', '能量值价格管理', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('18', '6', 'P17', '链账户信息', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('19', '6', 'P18', '能量值/资源消耗流水', '3', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('20', '17', 'P19', '新增', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('21', '17', 'P20', '查看', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('22', '18', 'P21', '查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('23', '19', 'P22', '查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('24', '7', 'P23', '网关管理', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('25', '7', 'P24', '接入管理', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('27', '8', 'P26', '官方DDC', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('32', '27', 'P31', 'DDC费用设置', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('33', '27', 'P32', '721DDC管理', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('34', '27', 'P33', '1155DDC管理', '3', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('35', '32', 'P34', '编辑', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('36', '33', 'P35', '查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('37', '36', 'P36', '区块信息查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('38', '34', 'P37', '查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('39', '38', 'P38', '区块信息查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('40', '9', 'P39', '收款账户配置', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('41', '9', 'P40', '汇款登记', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('42', '9', 'P41', '充值查询', '3', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('43', '9', 'P42', '提现管理', '4', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('44', '9', 'P43', '算力值流水', '4', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('45', '40', 'P44', '保存', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('46', '41', 'P45', '新增', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('47', '41', 'P46', '审核', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('48', '41', 'P47', '编辑', '3', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('49', '41', 'P48', '查看', '4', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('50', '42', 'P49', '查看', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('51', '43', 'P50', '审核', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('52', '43', 'P51', '确认', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('53', '43', 'P52', '查看', '3', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('54', '10', 'P53', '用户管理', '1', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('55', '10', 'P54', '角色管理', '2', '1', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('56', '54', 'P55', '新增', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('57', '54', 'P56', '编辑', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('58', '54', 'P57', '禁用', '3', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('59', '54', 'P58', '启用', '4', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('60', '54', 'P59', '查看', '5', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('61', '54', 'P60', '重置密码', '6', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('62', '54', 'P61', '删除', '7', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('63', '55', 'P62', '新增', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('64', '55', 'P63', '编辑', '2', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('65', '55', 'P64', '禁用', '3', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('66', '55', 'P65', '启用', '4', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('67', '55', 'P66', '查看', '5', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('68', '55', 'P67', '删除', '6', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('69', '5', 'P68', '重新提交', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('71', '24', 'P70', '保存', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('26', '24', 'P25', '修改接入方式', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('72', '5', 'P71', '删除', '1', '2', '1');
-INSERT INTO `sys_resource` (`rsuc_id`, `parent_id`, `rsuc_code`, `rsuc_name`, `priority`, `rsuc_type`, `locking`) VALUES ('73', '1', 'P72', '链节点管理', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('1', '0', 'P0', 'BSN城市算力中心管理系统', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('2', '1', 'P1', '首页', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('3', '1', 'P2', '门户配置管理', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('4', '1', 'P3', '注册用户管理', '3', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('5', '73', 'P4', '节点管理', '4', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('6', '1', 'P5', '链账户管理', '5', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('7', '1', 'P6', '网络接入', '6', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('8', '1', 'P7', '应用接入', '7', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('9', '1', 'P8', '用户资金管理', '8', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('10', '1', 'P9', '系统用户管理', '9', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('11', '3', 'P10', '保存', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('12', '4', 'P11', '删除', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('13', '5', 'P12', '节点入网', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('14', '5', 'P13', '查看', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('15', '5', 'P14', '确认入网', '3', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('16', '5', 'P15', '退网', '4', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('17', '73', 'P16', '能量值价格管理', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('18', '6', 'P17', '链账户信息', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('19', '6', 'P18', '能量值/资源消耗流水', '3', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('20', '17', 'P19', '新增', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('21', '17', 'P20', '查看', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('22', '18', 'P21', '查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('23', '19', 'P22', '查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('24', '7', 'P23', '网关管理', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('25', '7', 'P24', '接入管理', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('27', '8', 'P26', '官方DDC', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('32', '27', 'P31', 'DDC费用设置', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('33', '27', 'P32', '721DDC管理', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('34', '27', 'P33', '1155DDC管理', '3', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('35', '32', 'P34', '编辑', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('36', '33', 'P35', '查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('37', '36', 'P36', '区块信息查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('38', '34', 'P37', '查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('39', '38', 'P38', '区块信息查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('40', '9', 'P39', '收款账户配置', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('41', '9', 'P40', '汇款登记', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('42', '9', 'P41', '充值查询', '3', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('43', '9', 'P42', '提现管理', '4', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('44', '9', 'P43', '算力值流水', '4', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('45', '40', 'P44', '保存', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('46', '41', 'P45', '新增', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('47', '41', 'P46', '审核', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('48', '41', 'P47', '编辑', '3', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('49', '41', 'P48', '查看', '4', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('50', '42', 'P49', '查看', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('51', '43', 'P50', '审核', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('52', '43', 'P51', '确认', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('53', '43', 'P52', '查看', '3', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('54', '10', 'P53', '用户管理', '1', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('55', '10', 'P54', '角色管理', '2', '1', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('56', '54', 'P55', '新增', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('57', '54', 'P56', '编辑', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('58', '54', 'P57', '禁用', '3', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('59', '54', 'P58', '启用', '4', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('60', '54', 'P59', '查看', '5', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('61', '54', 'P60', '重置密码', '6', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('62', '54', 'P61', '删除', '7', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('63', '55', 'P62', '新增', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('64', '55', 'P63', '编辑', '2', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('65', '55', 'P64', '禁用', '3', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('66', '55', 'P65', '启用', '4', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('67', '55', 'P66', '查看', '5', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('68', '55', 'P67', '删除', '6', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('69', '5', 'P68', '重新提交', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('71', '24', 'P70', '保存', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('26', '24', 'P25', '修改接入方式', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('72', '5', 'P71', '删除', '1', '2', '1');
+INSERT INTO sys_resource (rsuc_id, parent_id, rsuc_code, rsuc_name, priority, rsuc_type, locking) VALUES ('73', '1', 'P72', '链节点管理', '1', '1', '1');
 
 
 #------初始管理员角色-----
-INSERT INTO `sys_role` (`role_id`, `role_name`, `role_code`, `description`, `locking`, `create_date`, `update_date`, `create_user_id`, `update_user_id`) VALUES ('1', '系统管理员', 'R001', '超级系统管理员', '1', '2022-11-15 17:13:13', '2022-11-15 17:13:29', '1', '1');
+INSERT INTO sys_role (role_id, role_name, role_code, description, locking, create_date, update_date, create_user_id, update_user_id) VALUES ('1', '系统管理员', 'R001', '超级系统管理员', '1', '2022-11-15 17:13:13', '2022-11-15 17:13:29', '1', '1');
 
 
 #------初始化角色对应权限code----
-INSERT INTO `sys_role_resource` (
-	`role_id`,
-	`rsuc_id`
+INSERT INTO sys_role_resource (
+	role_id,
+	rsuc_id
 )
 SELECT
-	`role_id`,
-	`rsuc_id`
+	role_id,
+	rsuc_id
 FROM sys_role ro LEFT JOIN sys_resource re ON ro.role_id = re.locking
 WHERE ro.role_id =1;
-INSERT INTO `sys_role_resource` (`role_id`, `rsuc_id`) VALUES ( '1', '72');
-INSERT INTO `sys_role_resource` (`role_id`, `rsuc_id`) VALUES ( '1', '73');
+INSERT INTO sys_role_resource (role_id, rsuc_id) VALUES ( '1', '72');
+INSERT INTO sys_role_resource (role_id, rsuc_id) VALUES ( '1', '73');
 
 
 #------初始管理员用户----
-INSERT INTO `sys_user_principal` (`user_id`, `login_name`, `user_name`, `user_email`, `phone`, `password`, `salt`, `user_lock`, `create_date`, `update_date`) VALUES ('1', 'admin', '超级管理员', NULL, NULL, 'a7fe12e20cb9c5abcc16a41582bcd616cb86c3ced5746e3fc7b98fd8d1c4befb', '87b2c367d9f060f3da7eb3e83a543ecb', '2', '2022-11-15 11:04:23', '2022-11-15 11:04:32');
+INSERT INTO sys_user_principal (user_id, login_name, user_name, user_email, phone, password, salt, user_lock, create_date, update_date) VALUES ('1', 'admin', '超级管理员', NULL, NULL, 'a7fe12e20cb9c5abcc16a41582bcd616cb86c3ced5746e3fc7b98fd8d1c4befb', '87b2c367d9f060f3da7eb3e83a543ecb', '2', '2022-11-15 11:04:23', '2022-11-15 11:04:32');
 
 
 
 #------初始用户与角色对应关系------
-INSERT INTO `sys_user_role` (`user_role_id`, `user_id`, `role_id`) VALUES ('1', '1', '1');
+INSERT INTO sys_user_role (user_role_id, user_id, role_id) VALUES ('1', '1', '1');
 
 
 #-------初始化管理员权限url------
 
-
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/user/portal/searches', 'P3', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/user/portal/remove', 'P11', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/recharge/data/searches', 'P41', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/recharge/offline/detail/search', 'P49', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/withdraw/data/searches', 'P42', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/withdraw/check/modify', 'P50', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/withdraw/detail/searches', 'P52', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/withdraw/sure/modify', 'P51', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/receive/account/search', 'P39', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/receive/account/save', 'P44', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/receive/account/modify', 'P44', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/searches', 'P40', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/save', 'P45', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/modify', 'P47', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/audit/save', 'P46', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/detail/search', 'P48', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/remittance/clientname/search', 'P45', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/trade/searches', 'P43', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/project/setting/gateway/searches', 'P23', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/project/setting/gateway/modify', 'P25', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/project/access/users/searches', 'P24', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/searches', 'P32', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/baseinfo/search', 'P35', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/operatelog/searches', 'P35', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/ddc/blockinfo/search', 'P36', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/searches', 'P33', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/baseinfo/search', 'P37', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/operatelog/searches', 'P37', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/ownerdetails/searches', 'P37', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/ddc/mgr/ddc/blockinfo/search', 'P38', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/feemgr/cost/searches', 'P31', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/feemgr/cost/modify', 'P34', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/resource/searches', 'P54', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/searches', 'P53', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/save', 'P55', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/search', 'P59', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/modify', 'P56', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/lock/modify', 'P57', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/lock/modify', 'P58', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/pass/modify', 'P60', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/remove', 'P61', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/permissions/searches', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/user/management/pass/modify', 'P0', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/searches', 'P54', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/search', 'P66', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/save', 'P62', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/modify', 'P63', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/status/modify', 'P64', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/status/modify', 'P65', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/role/remove', 'P67', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/home/needtobe/searches', 'P1', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/searches', 'P4', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/details', 'P13', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/chainList', 'P12', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/paramList', 'P12', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/apply', 'P12', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/confirm', 'P14', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/node/node/quit', 'P15', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/searches', 'P16', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/save', 'P19', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/search', 'P20', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/client/searches', 'P17', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/client/search', 'P21', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/config/search', 'P2', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/config/save', 'P10', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/captcha/render', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/file/file/downLoad', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/file/file/upload', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/file/pic/downLoad', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/opb/record/framework/searches', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/rsa/data/search', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/v1/status/data/searches', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/user/platform/search', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/anon/', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/swg/authentication/login', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/swg/authentication/logout', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/cert/create', 'SYS0', '2', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/retry', 'P4', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/authmgr/user/role/searches', 'P53', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/account/save', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS,PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/account/searches', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS,PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/project/network/access/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/project/network/key/modify', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/ddc/save', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/ddc/send', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/ddc/burn', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/anon/v1/file/file/base64/upload', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/ddc/fee/searches', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/ddc/transfer/searches', 'SYS0', '2', '1', 'PORTAL_DDC', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/account/hashrate/gas/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcportal/sys/v1/opb/account/hashrate/resource/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( 'ddcportal/sys/v1/opb/account/gas/recharge', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( 'ddcportal/sys/v1/opb/account/resource/recharge', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/opb/project/setting/kong/modify', 'P70', '1', '1', 'OPS', NULL, NULL, NULL, NULL);
-INSERT INTO `sys_resource_apimapping` ( `api_uri`, `rsuc_code`, `ischecked`, `locking`, `field1`, `field2`, `field3`, `field4`, `field5`) VALUES ( '/ddcops/sys/v1/node/delete', 'P71', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/user/portal/searches', 'P3', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/user/portal/remove', 'P11', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/recharge/data/searches', 'P41', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/recharge/offline/detail/search', 'P49', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/withdraw/data/searches', 'P42', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/withdraw/check/modify', 'P50', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/withdraw/detail/searches', 'P52', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/withdraw/sure/modify', 'P51', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/receive/account/search', 'P39', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/receive/account/save', 'P44', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/receive/account/modify', 'P44', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/searches', 'P40', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/save', 'P45', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/modify', 'P47', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/audit/save', 'P46', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/detail/search', 'P48', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/remittance/clientname/search', 'P45', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/trade/searches', 'P43', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/project/setting/gateway/searches', 'P23', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/project/setting/gateway/modify', 'P25', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/project/access/users/searches', 'P24', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/searches', 'P32', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/baseinfo/search', 'P35', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/721ddc/operatelog/searches', 'P35', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/ddc/blockinfo/search', 'P36', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/searches', 'P33', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/baseinfo/search', 'P37', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/operatelog/searches', 'P37', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/1155ddc/ownerdetails/searches', 'P37', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/ddc/mgr/ddc/blockinfo/search', 'P38', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/feemgr/cost/searches', 'P31', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/feemgr/cost/modify', 'P34', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/resource/searches', 'P54', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/searches', 'P53', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/save', 'P55', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/search', 'P59', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/modify', 'P56', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/lock/modify', 'P57', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/lock/modify', 'P58', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/pass/modify', 'P60', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/remove', 'P61', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/permissions/searches', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/user/management/pass/modify', 'P0', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/searches', 'P54', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/search', 'P66', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/save', 'P62', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/modify', 'P63', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/status/modify', 'P64', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/status/modify', 'P65', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/role/remove', 'P67', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/home/needtobe/searches', 'P1', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/searches', 'P4', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/details', 'P13', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/chainList', 'P12', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/paramList', 'P12', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/apply', 'P12', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/confirm', 'P14', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/node/node/quit', 'P15', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/searches', 'P16', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/save', 'P19', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/energy/price/gas/search', 'P20', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/client/searches', 'P17', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/client/search', 'P21', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/config/search', 'P2', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/config/save', 'P10', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/captcha/render', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/file/file/downLoad', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/file/file/upload', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/file/pic/downLoad', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/opb/record/framework/searches', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/rsa/data/search', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/v1/status/data/searches', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/user/platform/search', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/anon/', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/swg/authentication/login', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/swg/authentication/logout', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/cert/create', 'SYS0', '2', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/retry', 'P4', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/authmgr/user/role/searches', 'P53', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/account/save', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS,PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/account/searches', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS,PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/project/network/access/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/project/network/key/modify', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/ddc/save', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/ddc/send', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/ddc/burn', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/anon/v1/file/file/base64/upload', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/ddc/fee/searches', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/ddc/transfer/searches', 'SYS0', '2', '1', 'PORTAL_DDC', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/account/hashrate/gas/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcportal/sys/v1/opb/account/hashrate/resource/search', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( 'ddcportal/sys/v1/opb/account/gas/recharge', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( 'ddcportal/sys/v1/opb/account/resource/recharge', 'SYS0', '2', '1', 'PORTAL_NETWORK_ACCESS', 'PORTAL', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/project/setting/kong/modify', 'P70', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/node/delete', 'P71', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
+INSERT INTO sys_resource_apimapping ( api_uri, rsuc_code, ischecked, locking, field1, field2, field3, field4, field5) VALUES ( '/ddcops/sys/v1/opb/energy/cur/price/gas/search', 'P16', '1', '1', 'OPS', 'OPS', NULL, NULL, NULL);
 
 #----------短信模板---------
-INSERT INTO `sys_message_send_config` ( `msg_code`, `send_type`, `temp`, `email_subject`, `email_content_type`, `sms_tempid`, `lockable`, `code_desc`) VALUES ( 'MID0101', 'sms', '验证码 ${验证码}。请勿将验证码告知他人，如非您本人操作请忽略，感谢您的支持！', '', '2', 'PTAGPY8ZXFKL580080', '2', '登录，注册，忘记密码，用户信息修改');
+INSERT INTO sys_message_send_config ( msg_code, send_type, temp, email_subject, email_content_type, sms_tempid, lockable, code_desc) VALUES ( 'MID0101', 'sms', '验证码 ${验证码}。请勿将验证码告知他人，如非您本人操作请忽略，感谢您的支持！', '', '2', 'PTAGPY8ZXFKL580080', '2', '登录，注册，忘记密码，用户信息修改');
 
-INSERT INTO `function_menu` (`function_menu_id`, `menu_name`, `menu_code`, `father_menu_id`, `support_yn`, `create_date`, `update_date`) VALUES ('1', '应用接入', 'PORTAL_APPLICATION_ACCESS', '0', '1', '2022-11-09 10:01:30', '2022-12-01 10:11:41');
-INSERT INTO `function_menu` (`function_menu_id`, `menu_name`, `menu_code`, `father_menu_id`, `support_yn`, `create_date`, `update_date`) VALUES ('2', '官方DDC', 'PORTAL_DDC', '1', '1', '2022-11-09 10:02:23', '2022-12-01 10:11:41');
-INSERT INTO `function_menu` (`function_menu_id`, `menu_name`, `menu_code`, `father_menu_id`, `support_yn`, `create_date`, `update_date`) VALUES ('3', '网络接入', 'PORTAL_NETWORK_ACCESS', '0', '1', '2022-11-15 14:23:40', '2022-12-01 10:11:41');
+INSERT INTO function_menu (function_menu_id, menu_name, menu_code, father_menu_id, support_yn, create_date, update_date) VALUES ('1', '应用接入', 'PORTAL_APPLICATION_ACCESS', '0', '1', '2022-11-09 10:01:30', '2022-12-01 10:11:41');
+INSERT INTO function_menu (function_menu_id, menu_name, menu_code, father_menu_id, support_yn, create_date, update_date) VALUES ('2', '官方DDC', 'PORTAL_DDC', '1', '1', '2022-11-09 10:02:23', '2022-12-01 10:11:41');
+INSERT INTO function_menu (function_menu_id, menu_name, menu_code, father_menu_id, support_yn, create_date, update_date) VALUES ('3', '网络接入', 'PORTAL_NETWORK_ACCESS', '0', '1', '2022-11-15 14:23:40', '2022-12-01 10:11:41');
 
-INSERT INTO `ddc_cost_setup` (`ddc_cost_setup`, `tx_type`, `tx_amount`, `tx_name`, `update_date`) VALUES ('1', '1', '100', NULL, '2022-11-10 16:34:25');
-INSERT INTO `ddc_cost_setup` (`ddc_cost_setup`, `tx_type`, `tx_amount`, `tx_name`, `update_date`) VALUES ('2', '2', '30', NULL, '2022-11-10 16:33:23');
-INSERT INTO `ddc_cost_setup` (`ddc_cost_setup`, `tx_type`, `tx_amount`, `tx_name`, `update_date`) VALUES ('3', '3', '30', NULL, '2022-11-10 16:33:45');
+INSERT INTO ddc_cost_setup (ddc_cost_setup, tx_type, tx_amount, tx_name, update_date) VALUES ('1', '1', '100', NULL, '2022-11-10 16:34:25');
+INSERT INTO ddc_cost_setup (ddc_cost_setup, tx_type, tx_amount, tx_name, update_date) VALUES ('2', '2', '30', NULL, '2022-11-10 16:33:23');
+INSERT INTO ddc_cost_setup (ddc_cost_setup, tx_type, tx_amount, tx_name, update_date) VALUES ('3', '3', '30', NULL, '2022-11-10 16:33:45');
