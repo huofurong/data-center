@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 38021:38021
     volumes:
-      - $PWD/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
-      - /bsn/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-swap-job/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
+      - /bsn/ddc-swap-job/logs/:/bsn/ddclogs/
+      - /bsn/ddc-swap-job/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

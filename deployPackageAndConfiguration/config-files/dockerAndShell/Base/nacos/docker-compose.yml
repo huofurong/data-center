@@ -13,7 +13,7 @@ services:
       - PREFER_HOST_MODE=hostname
       - MODE=standalone
     volumes:
-      - $PWD/logs/:/home/nacos/logs
-      - $PWD/plugins/:/home/nacos/plugins
-      - $PWD/data/:/home/nacos/data
-      - $PWD/conf/application.properties:/home/nacos/conf/application.properties
+      - /bsn/nacos/logs/:/home/nacos/logs
+      - /bsn/nacos/plugins/:/home/nacos/plugins
+      - /bsn/nacos/data/:/home/nacos/data
+      - /bsn/nacos/conf/application.properties:/home/nacos/conf/application.properties

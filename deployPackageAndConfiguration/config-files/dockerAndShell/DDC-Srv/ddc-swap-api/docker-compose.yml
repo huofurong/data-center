@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 9070:9070
     volumes:
-      - $PWD/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
-      - /bsn/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-swap-api/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
+      - /bsn/ddc-swap-api/logs/:/bsn/ddclogs/
+      - /bsn/ddc-swap-api/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

@@ -6,9 +6,9 @@ services:
     restart: always
     tty: true
     volumes:
-      - $PWD/data:/data
-      - $PWD/conf/redis.conf:/etc/redis/redis.conf
-      - $PWD/logs:/logs
+      - /bsn/redis/data:/data
+      - /bsn/nacos/conf/redis.conf:/etc/redis/redis.conf
+      - /bsn/nacos/logs:/logs
     ports:
       - 6379:6379
     command:

@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 18080:18080
     volumes:
-      - $PWD/pkg/ddc-oai.jar:/bsn/ddc-oai/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-oai/pkg/ddc-oai.jar:/bsn/ddc-oai/ROOT.jar
+      - /bsn/ddc-oai/logs/:/bsn/ddclogs/
+      - /bsn/ddc-oai/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

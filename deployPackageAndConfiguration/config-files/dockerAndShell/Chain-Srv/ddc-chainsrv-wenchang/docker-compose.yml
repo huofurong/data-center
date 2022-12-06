@@ -9,9 +9,9 @@ services:
     # ports:
     #   - 32020:32020
     volumes:
-      - $PWD/pkg/ddc-chainsrv-wenchang.jar:/bsn/chainService/ROOT.jar
-      - $PWD/logs/:/bsn/chainService/logs/ddc-chainsrv-wenchang
-      - $PWD/script/:/bsn/script
+      - /bsn/ddc-chainsrv-wenchang/pkg/ddc-chainsrv-wenchang.jar:/bsn/chainService/ROOT.jar
+      - /bsn/ddc-chainsrv-wenchang/logs/:/bsn/chainService/logs/ddc-chainsrv-wenchang
+      - /bsn/ddc-chainsrv-wenchang/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:

@@ -15,9 +15,9 @@ services:
     # ports:
     #   - 9070:9070
     volumes:
-      - $PWD/ddc-swap-api/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-swap-api/script/:/bsn/script
+      - /bsn/ddc-swap-api/pkg/ddc-swap-api.jar:/bsn/ddc-swap-api/ROOT.jar
+      - /bsn/ddc-swap-api/logs/:/bsn/ddclogs/
+      - /bsn/ddc-swap-api/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -34,9 +34,9 @@ services:
     # ports:
     #   - 38021:38021
     volumes:
-      - $PWD/ddc-swap-job/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-swap-job/script/:/bsn/script
+      - /bsn/ddc-swap-job/pkg/ddc-swap-job.jar:/bsn/ddc-swap-job/ROOT.jar
+      - /bsn/ddc-swap-job/logs/:/bsn/ddclogs/
+      - /bsn/ddc-swap-job/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -53,9 +53,9 @@ services:
     # ports:
     #   - 8071:8071
     volumes:
-      - $PWD/ddc-base/pkg/ddc-base.jar:/bsn/ddc-base/ROOT.jar
-      - $PWD/ddc-base/script/:/bsn/script
-      - $PWD/ddclogs/:/bsn/ddclogs/
+      - /bsn/ddc-base/pkg/ddc-base.jar:/bsn/ddc-base/ROOT.jar
+      - /bsn/ddc-base/script/:/bsn/script
+      - /bsn/ddc-base/logs/:/bsn/ddclogs/
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -71,9 +71,9 @@ services:
     # ports:
     #   - 8072:8072
     volumes:
-      - $PWD/ddc-account/pkg/ddc-account.jar:/bsn/ddc-account/ROOT.jar
-      - $PWD/ddc-account/script/:/bsn/script
-      - $PWD/ddclogs/:/bsn/ddclogs/
+      - /bsn/ddc-account/pkg/ddc-account.jar:/bsn/ddc-account/ROOT.jar
+      - /bsn/ddc-account/script/:/bsn/script
+      - /bsn/ddc-account/logs/:/bsn/ddclogs/
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -89,9 +89,9 @@ services:
     # ports:
     #   - 8081:8081
     volumes:
-      - $PWD/ddc-ops/pkg/ddc-ops.jar:/bsn/ddc-ops/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-ops/script/:/bsn/script
+      - /bsn/ddc-ops/pkg/ddc-ops.jar:/bsn/ddc-ops/ROOT.jar
+      - /bsn/ddc-ops/logs/:/bsn/ddclogs/
+      - /bsn/ddc-ops/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -108,9 +108,9 @@ services:
     # ports:
     #   - 8091:8091
     volumes:
-      - $PWD/ddc-auth/pkg/ddc-auth.jar:/bsn/ddc-auth/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-auth/script/:/bsn/script
+      - /bsn/ddc-auth/pkg/ddc-auth.jar:/bsn/ddc-auth/ROOT.jar
+      - /bsn/ddc-auth/logs/:/bsn/ddclogs/
+      - /bsn/ddc-auth/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -127,9 +127,9 @@ services:
     # ports:
     #   - 8061:8061
     volumes:
-      - $PWD/ddc-opsjob/pkg/ddc-opsjob.jar:/bsn/ddc-opsjob/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-opsjob/script/:/bsn/script
+      - /bsn/ddc-opsjob/pkg/ddc-opsjob.jar:/bsn/ddc-opsjob/ROOT.jar
+      - /bsn/ddc-opsjob/logs/:/bsn/ddclogs/
+      - /bsn/ddc-opsjob/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -146,9 +146,9 @@ services:
     # ports:
     #   - 8072:8072
     volumes:
-      - $PWD/ddc-portal/pkg/ddc-portal.jar:/bsn/ddc-portal/ROOT.jar
-      - $PWD/ddclogs/:/bsn/ddclogs/
-      - $PWD/ddc-portal/script/:/bsn/script
+      - /bsn/ddc-portal/pkg/ddc-portal.jar:/bsn/ddc-portal/ROOT.jar
+      - /bsn/ddc-portal/logs/:/bsn/ddclogs/
+      - /bsn/ddc-portal/script/:/bsn/script
       - /etc/hosts:/etc/hosts
       - /etc/localtime:/etc/localtime
     environment:
@@ -166,9 +166,9 @@ services:
   #   # ports:
   #   #   - 18080:18080
   #   volumes:
-  #     - $PWD/ddc-oai/pkg/ddc-oai.jar:/bsn/ddc-oai/ROOT.jar
-  #     - /bsn/ddclogs/:/bsn/ddclogs/
-  #     - $PWD/ddc-oai/script/:/bsn/script
+  #     - /bsn/ddc-oai/pkg/ddc-oai.jar:/bsn/ddc-oai/ROOT.jar
+  #     - /bsn/ddc-oai/logs/:/bsn/ddclogs/
+  #     - /bsn/ddc-oai/script/:/bsn/script
   #     - /etc/hosts:/etc/hosts
   #     - /etc/localtime:/etc/localtime
   #   environment:
